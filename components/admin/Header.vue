@@ -15,7 +15,7 @@
           >
             <NuxtLink
               :to="{ name: breadcrumb.route }"
-              v-if="index <= breadcrumbs.length && breadcrumb.route"
+              v-if="index < breadcrumbs.length - 1 && breadcrumb.route"
             >{{ $t(breadcrumb.name) }}
             </NuxtLink
             >
@@ -30,7 +30,7 @@
           </li>
         </ol>
         <h6 class="font-weight-bolder mb-0">
-          {{ title }}
+          {{ breadcrumbs.length? $t(breadcrumbs[breadcrumbs.length - 1].name) : title }}
         </h6>
       </nav>
       <div class="mt-sm-0 mt-2 me-md-0 me-sm-4" style="flex: auto" id="navbar">
@@ -132,7 +132,16 @@ export default defineComponent({
       if (route.meta && route.meta.breadcrumbs) {
         return route.meta.breadcrumbs
       }
-      return []
+      let path = '';
+      const breadcrumbs = route.path.substring(1).split('/').flatMap((item, index, array) => {
+        const crumb = {};
+        crumb.name = item;
+        path = `${path}/${item}`;
+        let route = router.resolve(path);
+        crumb.route = route.name;
+        return route.name ? crumb : [];
+      });
+      return breadcrumbs;
     })
 
     const toggleNavbar = () => {
